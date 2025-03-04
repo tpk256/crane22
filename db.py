@@ -1,0 +1,116 @@
+import sqlite3
+from typing import List, Tuple, Optional
+
+from models import Zone, Place, Task, State
+
+DB_NAME = "database.db"
+
+
+def get_all_work_zones(color: str = "gray") -> List[Zone]:
+    """Возвращает список всех рабочих зон."""
+
+    zones = []
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM Work_Zone")
+        for id_, x, y, width, height, zone_name in cursor.fetchall():
+            zone = Zone(
+                id=id_,
+                poss=(x, y),
+                height=height,
+                width=width,
+                name=zone_name,
+                color=color,
+                places=get_storage_areas_by_work_zone(work_zone_id=id_)
+            )
+            zones.append(zone)
+    return zones
+
+
+def get_storage_areas_by_work_zone(work_zone_id: int, color: str = "yellow") -> List[Place]:
+    """Возвращает список мест для складирования в указанной рабочей зоне."""
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        places = []
+        cursor.execute("SELECT * FROM Storage_Area WHERE work_zone_id = ?", (work_zone_id,))
+
+        for id_, x, y, width, height, name, *_ in cursor.fetchall():
+            place = Place(
+                id=id_,
+                name=name,
+                poss=(x, y),
+                width=width,
+                height=height,
+                color=color
+            )
+            places.append(place)
+
+        return places
+
+
+def get_tasks_by_state(state_id: int) -> List[Task]:
+    """Возвращает список всех заданий по состоянию."""
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        tasks = []
+        cursor.execute(
+            "SELECT id, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date  FROM Task WHERE state_id = ?",
+            (state_id,)
+        )
+        for id_, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date in cursor.fetchall():
+            task = Task(
+                id=id_,
+                from_id=from_id,
+                to_id=to_id,
+                count=sheet_count,
+                comment=comment,
+                state=State(state_id),
+                creation_date=creation_date,
+                start_date=start_date,
+                end_date=end_date
+            )
+            tasks.append(task)
+
+        return tasks
+
+
+####
+def change_state_task(task_id: int, to_change: State) -> int:
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE Task 
+            SET state_id = ?
+            WHERE id = ?
+        ''', (to_change.value, task_id))
+        conn.commit()
+        return task_id
+
+
+def create_task(operator_id: int, sheet_count: int, from_id: int, to_id: int) -> int:
+    state_id: int = 0
+    """Создает новое задание и возвращает его ID."""
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO Task (operator_id, creation_date, sheet_count, from_id, to_id, state_id) 
+            VALUES (?, CURRENT_TIMESTAMP, ?, ?, ?, ?)
+        ''', (operator_id, sheet_count, from_id, to_id, state_id))
+        conn.commit()
+        return cursor.lastrowid
+
+
+####
+def get_place_by_id(place_id: int, color: str = "yellow") -> Place:
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM Storage_Area WHERE id = ?", (place_id,))
+        id_, x, y, width, height, name, *_ = cursor.fetchone()
+    return Place(
+            id=id_,
+            name=name,
+            poss=(x, y),
+            width=width,
+            height=height,
+            color=color
+        )
