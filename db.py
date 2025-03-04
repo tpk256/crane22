@@ -87,15 +87,15 @@ def change_state_task(task_id: int, to_change: State) -> int:
         return task_id
 
 
-def create_task(operator_id: int, sheet_count: int, from_id: int, to_id: int) -> int:
+def create_task(operator_id: int, sheet_count: int, from_id: int, to_id: int, comment: str) -> int:
     state_id: int = 0
     """Создает новое задание и возвращает его ID."""
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO Task (operator_id, creation_date, sheet_count, from_id, to_id, state_id) 
-            VALUES (?, CURRENT_TIMESTAMP, ?, ?, ?, ?)
-        ''', (operator_id, sheet_count, from_id, to_id, state_id))
+            INSERT INTO Task (operator_id, creation_date, sheet_count, from_id, to_id, state_id, comment) 
+            VALUES (?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?)
+        ''', (operator_id, sheet_count, from_id, to_id, state_id, comment))
         conn.commit()
         return cursor.lastrowid
 

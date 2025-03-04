@@ -33,6 +33,7 @@ class BaseTask(BaseModel):
     from_id: int
     to_id: int
     count: int
+    operator_id: int
     comment: Optional[str] = ""
 
 

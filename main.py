@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from models import Task, State, Zone, Place, BaseTask
-from db import get_all_work_zones, get_tasks_by_state, change_state_task
+from db import get_all_work_zones, get_tasks_by_state, change_state_task, create_task
 
 
 active_task: queue.Queue[Task] = queue.Queue()
@@ -29,10 +29,28 @@ app.add_middleware(
 FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
 
 
-@app.post("/task/сreate")
+@app.post("/task/сreate",)
 async def task_create(task: BaseTask):
+    print(task)
     # Создать таск, сохранить в бд, сохранить в кеш
-    ...
+    data = create_task(
+            operator_id=task.operator_id,
+            sheet_count=task.count,
+            from_id=task.from_id,
+            to_id=task.to_id,
+            comment=task.comment
+        )
+    print(
+        data
+    )
+    # task = Task(
+    #     *create_task(
+    #         operator_id=task.operator_id,
+    #         sheet_count=task.count,
+    #         from_id=task.from_id,
+    #         to_id=task.to_id
+    #     )
+    # )
 
 
 @app.post("/task/accept")

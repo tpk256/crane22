@@ -1,11 +1,20 @@
 <script>
 
 import axios from "axios";
+import { ref } from "vue";
+
+
+
+
+
+
+
 
 export default  {
 
   data() {
     return {
+      isModalOpen: ref(false), 
       tasks: [], 
       ws: null,
 
@@ -104,7 +113,16 @@ export default  {
 
                   }
         },
+        async choiceAcceptTask(taskId){
+          
+          //this.isModalOpen = true;
+          // openModal(this.isModalOpen);
+        },
+
         async acceptTask(taskId) {
+
+                  await this.choiceAcceptTask(taskId);
+                  
                   try {
                     const response = await axios.post(`http://localhost:5001/task/accept?task_id=${taskId}`);
 
@@ -339,6 +357,23 @@ export default  {
 <template>
 
         <div class="container">
+
+          <div v-if="isOpen" class="modal-overlay" @click="closeModal">
+            <div class="modal-content" @click.stop>
+                <span class="close-btn" @click="closeModal">&times;</span>
+                <h2 id="number-task"></h2>
+                <p id="count-list"><strong>Кол-во листов:</strong> </p>
+                <p id="from"><strong>Откуда:</strong></p>
+                <p id="to"><strong>Куда:</strong></p>
+                <p id="comment">Комментарий</p>
+
+                <div class="buttons">
+                  <button class="accept" @click="acceptTaskState">Принять</button>
+                  <button class="decline" @click="declineTaskState">Отклонить</button>
+                </div>
+            </div>
+          </div>
+
           <div class="task_zone">
             
               <table>
@@ -366,6 +401,108 @@ export default  {
 </template>
 
 <style>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Контейнер модального окна */
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 350px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Кнопка закрытия */
+.close-btn {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: red;
+}
+
+/* Кнопки действий */
+.buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.accept {
+  background: green;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.decline {
+  background: red;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.accept:hover {
+  background: darkgreen;
+}
+
+.decline:hover {
+  background: darkred;
+}
+.open-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Задний фон модального окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Само модальное окно */
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 300px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Кнопка закрытия */
+.close-btn {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: red;
+}
 
     html, body {
       margin: 0; 
