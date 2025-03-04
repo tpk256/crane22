@@ -54,10 +54,10 @@ def get_tasks_by_state(state_id: int) -> List[Task]:
         cursor = conn.cursor()
         tasks = []
         cursor.execute(
-            "SELECT id, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date  FROM Task WHERE state_id = ?",
+            "SELECT id, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date, operator_id  FROM Task WHERE state_id = ?",
             (state_id,)
         )
-        for id_, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date in cursor.fetchall():
+        for id_, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date, operator_id in cursor.fetchall():
             task = Task(
                 id=id_,
                 from_id=from_id,
@@ -67,7 +67,8 @@ def get_tasks_by_state(state_id: int) -> List[Task]:
                 state=State(state_id),
                 creation_date=creation_date,
                 start_date=start_date,
-                end_date=end_date
+                end_date=end_date,
+                operator_id=operator_id
             )
             tasks.append(task)
 
@@ -98,6 +99,31 @@ def create_task(operator_id: int, sheet_count: int, from_id: int, to_id: int, co
         ''', (operator_id, sheet_count, from_id, to_id, state_id, comment))
         conn.commit()
         return cursor.lastrowid
+
+
+def get_task_by_id(task_id: int) -> Task:
+    with sqlite3.connect(DB_NAME) as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date, operator_id  FROM Task WHERE id = ?",
+            (task_id,)
+        )
+        id_, from_id, to_id, state_id, comment, sheet_count, creation_date, start_date, end_date, operator_id = cursor.fetchone()
+
+        task = Task(
+            id=id_,
+            from_id=from_id,
+            to_id=to_id,
+            count=sheet_count,
+            comment=comment,
+            state=State(state_id),
+            creation_date=creation_date,
+            start_date=start_date,
+            end_date=end_date,
+            operator_id=operator_id
+        )
+
+        return task
 
 
 ####
