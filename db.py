@@ -1,7 +1,9 @@
 import sqlite3
 from typing import List, Tuple, Optional
+from datetime import datetime
 
 from models import Zone, Place, Task, State
+
 
 DB_NAME = "database.db"
 
@@ -76,14 +78,30 @@ def get_tasks_by_state(state_id: int) -> List[Task]:
 
 
 ####
-def change_state_task(task_id: int, to_change: State) -> int:
+def change_state_task(task_id: int, to_change: State, flag_time_end: bool = False, flag_time_start: bool = False) -> int:
     with sqlite3.connect(DB_NAME) as conn:
         cursor = conn.cursor()
-        cursor.execute('''
-            UPDATE Task 
-            SET state_id = ?
-            WHERE id = ?
-        ''', (to_change.value, task_id))
+        if flag_time_start or flag_time_end:
+            time = str(datetime.now())
+
+            cursor.execute(f'''
+                UPDATE 
+                    Task 
+                SET 
+                    state_id = ?,
+                    {"end_date" if flag_time_end else "start_date"} = ?
+                WHERE 
+                    id = ?
+            ''', (to_change.value, time, task_id ))
+        else:
+            cursor.execute('''
+                            UPDATE 
+                                Task 
+                            SET 
+                                state_id = ?
+                            WHERE 
+                                id = ?
+                        ''', (to_change.value, task_id))
         conn.commit()
         return task_id
 

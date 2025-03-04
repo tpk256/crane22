@@ -52,7 +52,7 @@ async def task_create(task: BaseTask):
 @app.post("/task/accept")
 async def task_accepted(task_id: int = Query(..., description="ID задачи")):
     # изменяем статус задачи в бд и отправляем оператору этот статус и даем добро на смену стейта у крановщика
-    task_id = change_state_task(task_id=task_id, to_change=State.IN_PROGRESS)
+    task_id = change_state_task(task_id=task_id, to_change=State.IN_PROGRESS, flag_time_start=True)
     return {
         "id": task_id,
         "state": "in_progress"
@@ -61,7 +61,7 @@ async def task_accepted(task_id: int = Query(..., description="ID задачи")
 
 @app.post("/task/complete")
 async def task_completed(task_id: int = Query(..., description="ID задачи")):
-    task_id = change_state_task(task_id=task_id, to_change=State.COMPLETED)
+    task_id = change_state_task(task_id=task_id, to_change=State.COMPLETED, flag_time_end=True)
     return {
         "task_id": task_id,
         "state": "completed"
